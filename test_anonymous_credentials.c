@@ -10,8 +10,15 @@
 #include <commitment_schemes/PoK_signature/PoK_signature.h>
 #include <utils/utils.h>
 #include "assert.h"
+#include <stdio.h>
+#include <time.h>
 
-#define NUMBER_OF_MESSAGES 32
+#define NUMBER_OF_MESSAGES 2
+
+void printDuration(clock_t start, clock_t end, char* msg) {
+    double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC * 1000;
+    printf("%s: %.3f milliseconds\n", msg, cpu_time_used);
+}
 
 void create_key_pair(schemeD_sk *sk, schemeD_pk *pk, csprng *prng, uint32_t n) {
     schemeD_init_keypair(sk, pk, n);
@@ -24,6 +31,7 @@ int execute_PoK_of_message_protocol_and_obtain_signature(schemeD_sig *sig, BIG_2
     BIG_256_56 challenge, t[NUMBER_OF_MESSAGES], s[NUMBER_OF_MESSAGES];
     ECP2_BN254 T, commitment;
 
+    clock_t a = clock();
     generate_commitment(&commitment, message, user_pk);
 
     //Prover(Compute T) -> Verifier
@@ -34,26 +42,36 @@ int execute_PoK_of_message_protocol_and_obtain_signature(schemeD_sig *sig, BIG_2
 
     //Prover(Compute s based on challenge) -> Verifier
     prover_2(s, challenge, t, message, NUMBER_OF_MESSAGES);
+    clock_t b = clock();
+    printDuration(a, b, "RSU generate zkp");
 
     //Verifier(Given T, commitment and s verify PoK) -> 1 or 0
     assert(verifier(&T, &commitment, s, challenge, user_pk));
+    clock_t c = clock();
+    printDuration(b, c, "Bank verify zkp");
 
     ECP_BN254 converted_commitment;
 
     commitment_conversion(&converted_commitment, user_sk, sig, message);
 
     sign_commitment(sig, &converted_commitment, signer_sk, prng);
+    clock_t d = clock();
+    printDuration(c, d, "Bank sign");
 
     return 1;
 }
 
 void compute_blind_signature(schemeD_sig *blind_sig, schemeD_sig *sig, PoK_randomness *randomness, csprng *prng) {
+    clock_t a = clock();
     PoK_compute_blind_signature(blind_sig, sig, randomness, prng);
+    clock_t b = clock();
+    printDuration(a, b, "Bank sign2");
 }
 
 int execute_PoK_of_signature_and_verify_pairings(schemeD_sig *sig, schemeD_pk *pk, PoK_randomness *randomness,
                                                  BIG_256_56 *message, csprng *prng) {
 
+    clock_t a = clock();
     FP12_BN254 commitment;
 
     PoK_generate_commitment(&commitment, randomness, message, pk, sig);
@@ -69,12 +87,16 @@ int execute_PoK_of_signature_and_verify_pairings(schemeD_sig *sig, schemeD_pk *p
 
     //Generate s1, s1
     PoK_prover_2(s1, s2, challenge, t1, t2, message, randomness, sig);
+    clock_t b = clock();
+    printDuration(a, b, "RSU generate sig zkp");
 
     //Verify randomness
     assert(PoK_verifier(s1, s2, challenge, &T, &commitment, pk, sig));
 
     //Verify pairings
     assert(PoK_verify_pairings(sig, pk));
+    clock_t c = clock();
+    printDuration(b, c, "Vehicle verify sig zkp");
 
     return 1;
 }
@@ -142,8 +164,10 @@ int main() {
     //---------------------------------------------------
 
 
-    printf("Testing anonymous credentials...");
-    test_anonymous_credentials(&prng);
+    printf("Testing anonymous credentials...\n");
+    for (int i = 0; i < 1000; i++) {
+        test_anonymous_credentials(&prng);
+    }
 
     return 0;
 }

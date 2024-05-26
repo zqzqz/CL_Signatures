@@ -3,6 +3,6 @@ project(cl_signatures C)
 
 set(CMAKE_C_STANDARD 99)
 
-include_directories(${CMAKE_SOURCE_DIR}/core/c)
+include_directories(${CORE_LIB_PATH})
 
 add_library(utils utils.c)
