@@ -3,7 +3,7 @@
 //
 
 #include <core.h>
-#include <bls_BN254.h>
+#include <bls_BLS12381.h>
 #include <string.h>
 #include <assert.h>
 
@@ -20,15 +20,15 @@ void test_scheme_A(csprng *prng) {
     schemeA_generate_sk(&sk, prng);
     schemeA_generate_pk(&pk, &sk);
 
-    BIG_256_56 message;
-    BIG_256_56_random(message, prng);
+    BIG_384_58 message;
+    BIG_384_58_random(message, prng);
 
     schemeA_sign(&sig, message, &sk, prng);
 
     assert(schemeA_verify(&sig, message, &pk));
 
     //Negative test change message to 0
-    memset(message, 0, (sizeof(BIG_256_56)));
+    memset(message, 0, (sizeof(BIG_384_58)));
     assert(! schemeA_verify(&sig, message, &pk) );
 
     printf("Success\n");
@@ -43,17 +43,17 @@ void test_scheme_B(csprng *prng) {
 
     schemeB_generate_pk(&pk, &sk);
 
-    BIG_256_56 message, randomness;
+    BIG_384_58 message, randomness;
 
-    BIG_256_56_random(message, prng);
-    BIG_256_56_random(randomness, prng);
+    BIG_384_58_random(message, prng);
+    BIG_384_58_random(randomness, prng);
 
     schemeB_sign(&sig, message, randomness, &sk, prng);
 
     assert(schemeB_verify(&sig, message, randomness, &pk));
 
     //Negative test change message to 0
-    memset(message, 0, (sizeof(BIG_256_56)));
+    memset(message, 0, (sizeof(BIG_384_58)));
     assert(! schemeB_verify(&sig, message, randomness, &pk) );
 
     printf("Success\n");
@@ -62,9 +62,9 @@ void test_scheme_B(csprng *prng) {
 void test_scheme_C(csprng *prng) {
     const uint32_t number_of_messages = 32;
 
-    BIG_256_56 message[number_of_messages];
+    BIG_384_58 message[number_of_messages];
     for(int i = 0; i < number_of_messages; i++) {
-        BIG_256_56_random(message[i], prng);
+        BIG_384_58_random(message[i], prng);
     }
 
     schemeC_sk sk;
@@ -82,7 +82,7 @@ void test_scheme_C(csprng *prng) {
     assert(schemeC_verify(&sig, message, &pk));
 
     //Negative test change message to 0
-    memset(message, 0, number_of_messages * (sizeof(BIG_256_56)));
+    memset(message, 0, number_of_messages * (sizeof(BIG_384_58)));
     assert(! schemeC_verify(&sig, message, &pk) );
 
     schemeC_destroy_keypair(&sk, &pk);
@@ -94,9 +94,9 @@ void test_scheme_C(csprng *prng) {
 void test_scheme_D(csprng *prng) {
     const uint32_t number_of_messages = 32;
 
-    BIG_256_56 message[number_of_messages];
+    BIG_384_58 message[number_of_messages];
     for(int i = 0; i < number_of_messages; i++) {
-        BIG_256_56_random(message[i], prng);
+        BIG_384_58_random(message[i], prng);
     }
 
     schemeD_sk sk;
@@ -114,7 +114,7 @@ void test_scheme_D(csprng *prng) {
     assert(schemeD_verify(&sig, message, &pk));
 
     //Negative test change message to 0
-    memset(message, 0, number_of_messages * (sizeof(BIG_256_56)));
+    memset(message, 0, number_of_messages * (sizeof(BIG_384_58)));
     assert(! schemeD_verify(&sig, message, &pk) );
 
     schemeD_destroy_keypair(&sk, &pk);
@@ -128,7 +128,7 @@ int main() {
     //---------------------------------------------------
     // Init
     //---------------------------------------------------
-    if(BLS_BN254_INIT() != BLS_OK) {
+    if(BLS_BLS12381_INIT() != BLS_OK) {
         printf("Error\n");
         exit(1);
     }

@@ -5,8 +5,8 @@
 #ifndef CL_SIGNATURES_PARAMS_H
 #define CL_SIGNATURES_PARAMS_H
 
-#include <ecp2_BN254.h>
+#include <ecp2_BLS12381.h>
 
-#define MODULUS (int64_t *)CURVE_Order_BN254
+#define MODULUS (int64_t *)CURVE_Order_BLS12381
 
 #endif //CL_SIGNATURES_PARAMS_H
