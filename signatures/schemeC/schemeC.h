@@ -6,30 +6,30 @@
 #define CL_SIGNATURES_SCHEMEC_H
 
 #include <core.h>
-#include <big_256_56.h>
-#include <ecp2_BN254.h>
-#include <ecp_BN254.h>
+#include <big_464_60.h>
+#include <ecp2_BN462.h>
+#include <ecp_BN462.h>
 
 typedef struct {
-    BIG_256_56 x;
-    BIG_256_56 y;
-    BIG_256_56 *z;
+    BIG_464_60 x;
+    BIG_464_60 y;
+    BIG_464_60 *z;
     uint32_t l;
 } schemeC_sk;
 
 typedef struct {
-    ECP2_BN254 X;
-    ECP2_BN254 Y;
-    ECP2_BN254 *Z;
+    ECP2_BN462 X;
+    ECP2_BN462 Y;
+    ECP2_BN462 *Z;
     uint32_t l;
 } schemeC_pk;
 
 typedef struct {
-    ECP_BN254 a;
-    ECP_BN254 *A;
-    ECP_BN254 b;
-    ECP_BN254 *B;
-    ECP_BN254 c;
+    ECP_BN462 a;
+    ECP_BN462 *A;
+    ECP_BN462 b;
+    ECP_BN462 *B;
+    ECP_BN462 c;
     uint32_t l;
 }schemeC_sig;
 
@@ -45,8 +45,8 @@ void schemeC_generate_sk(schemeC_sk *sk, csprng *prng);
 
 void schemeC_generate_pk(schemeC_pk *pk, schemeC_sk *sk);
 
-void schemeC_sign(schemeC_sig *sig, BIG_256_56 *message, schemeC_sk *sk, csprng *prng);
+void schemeC_sign(schemeC_sig *sig, BIG_464_60 *message, schemeC_sk *sk, csprng *prng);
 
-int schemeC_verify(schemeC_sig *sig, BIG_256_56 *message, schemeC_pk *pk);
+int schemeC_verify(schemeC_sig *sig, BIG_464_60 *message, schemeC_pk *pk);
 
 #endif //CL_SIGNATURES_SCHEMEC_H

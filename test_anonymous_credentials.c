@@ -3,10 +3,10 @@
 //
 
 #include <commitment_schemes/PoK_message/PoK_message.h>
-#include <bls_BN254.h>
+#include <bls_BN462.h>
 #include <signatures/schemeD/schemeD.h>
 #include <sign_commitment/sign_commitment.h>
-#include <ecdh_BN254.h>
+#include <ecdh_BN462.h>
 #include <commitment_schemes/PoK_signature/PoK_signature.h>
 #include <utils/utils.h>
 #include "assert.h"
@@ -26,10 +26,10 @@ void create_key_pair(schemeD_sk *sk, schemeD_pk *pk, csprng *prng, uint32_t n) {
     schemeD_generate_pk(pk, sk);
 }
 
-int execute_PoK_of_message_protocol_and_obtain_signature(schemeD_sig *sig, BIG_256_56 *message, schemeD_pk *user_pk,
+int execute_PoK_of_message_protocol_and_obtain_signature(schemeD_sig *sig, BIG_464_60 *message, schemeD_pk *user_pk,
                                                          schemeD_sk *user_sk, schemeD_sk *signer_sk, csprng *prng) {
-    BIG_256_56 challenge, t[NUMBER_OF_MESSAGES], s[NUMBER_OF_MESSAGES];
-    ECP2_BN254 T, commitment;
+    BIG_464_60 challenge, t[NUMBER_OF_MESSAGES], s[NUMBER_OF_MESSAGES];
+    ECP2_BN462 T, commitment;
 
     clock_t a = clock();
     generate_commitment(&commitment, message, user_pk);
@@ -38,7 +38,7 @@ int execute_PoK_of_message_protocol_and_obtain_signature(schemeD_sig *sig, BIG_2
     prover_1(&T, t, user_pk, prng);
 
     //Compute challenge
-    BIG_256_56_random(challenge, prng);
+    BIG_464_60_random(challenge, prng);
 
     //Prover(Compute s based on challenge) -> Verifier
     prover_2(s, challenge, t, message, NUMBER_OF_MESSAGES);
@@ -50,7 +50,7 @@ int execute_PoK_of_message_protocol_and_obtain_signature(schemeD_sig *sig, BIG_2
     clock_t c = clock();
     printDuration(b, c, "Bank verify zkp");
 
-    ECP_BN254 converted_commitment;
+    ECP_BN462 converted_commitment;
 
     commitment_conversion(&converted_commitment, user_sk, sig, message);
 
@@ -69,21 +69,21 @@ void compute_blind_signature(schemeD_sig *blind_sig, schemeD_sig *sig, PoK_rando
 }
 
 int execute_PoK_of_signature_and_verify_pairings(schemeD_sig *sig, schemeD_pk *pk, PoK_randomness *randomness,
-                                                 BIG_256_56 *message, csprng *prng) {
+                                                 BIG_464_60 *message, csprng *prng) {
 
     clock_t a = clock();
-    FP12_BN254 commitment;
+    FP12_BN462 commitment;
 
     PoK_generate_commitment(&commitment, randomness, message, pk, sig);
 
-    FP12_BN254 T;
-    BIG_256_56 t1, t2[NUMBER_OF_MESSAGES], s1, s2[NUMBER_OF_MESSAGES], challenge;
+    FP12_BN462 T;
+    BIG_464_60 t1, t2[NUMBER_OF_MESSAGES], s1, s2[NUMBER_OF_MESSAGES], challenge;
 
     //Generate T
     PoK_prover_1(&T, t1, t2, pk, sig, prng);
 
     //Generate challenge
-    BIG_256_56_random(challenge, prng);
+    BIG_464_60_random(challenge, prng);
 
     //Generate s1, s1
     PoK_prover_2(s1, s2, challenge, t1, t2, message, randomness, sig);
@@ -103,12 +103,12 @@ int execute_PoK_of_signature_and_verify_pairings(schemeD_sig *sig, schemeD_pk *p
 
 void test_anonymous_credentials(csprng *prng) {
 
-    BIG_256_56 message[NUMBER_OF_MESSAGES], t[NUMBER_OF_MESSAGES], s[NUMBER_OF_MESSAGES], challenge_1;
+    BIG_464_60 message[NUMBER_OF_MESSAGES], t[NUMBER_OF_MESSAGES], s[NUMBER_OF_MESSAGES], challenge_1;
 
-    BIG_256_56_random(challenge_1, prng);
+    BIG_464_60_random(challenge_1, prng);
 
     for(int i = 0; i < NUMBER_OF_MESSAGES; i++) {
-        BIG_256_56_random(message[i], prng);
+        BIG_464_60_random(message[i], prng);
     }
 
     //User key pair
@@ -130,7 +130,7 @@ void test_anonymous_credentials(csprng *prng) {
     assert(execute_PoK_of_message_protocol_and_obtain_signature(&sig, message, &user_pk, &user_sk, &signer_sk, prng));
 
     PoK_randomness randomness;
-    BIG_256_56_random(randomness.r, prng);
+    BIG_464_60_random(randomness.r, prng);
 
     compute_blind_signature(&blind_sig, &sig, &randomness, prng);
 
@@ -148,7 +148,7 @@ int main() {
     //---------------------------------------------------
     // Init
     //---------------------------------------------------
-    if(BLS_BN254_INIT() != BLS_OK) {
+    if(BLS_BN462_INIT() != BLS_OK) {
         printf("Error\n");
         exit(1);
     }
