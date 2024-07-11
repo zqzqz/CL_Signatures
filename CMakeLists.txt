@@ -48,7 +48,7 @@ target_link_libraries(test_VRF
         ${CORE_LIB_PATH}/core.a)
 
 # Create a merged library
-add_library(CLSigLib STATIC
+add_library(zbsig STATIC
         $<TARGET_OBJECTS:PoK_message>
         $<TARGET_OBJECTS:PoK_signature>
         $<TARGET_OBJECTS:sign_commitment>
@@ -58,4 +58,4 @@ add_library(CLSigLib STATIC
         $<TARGET_OBJECTS:schemeC>
         $<TARGET_OBJECTS:schemeD>)
 
-target_link_libraries(CLSigLib ${CORE_LIB_PATH}/core.a)
+target_link_libraries(zbsig ${CORE_LIB_PATH}/core.a)
